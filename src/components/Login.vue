@@ -1,4 +1,5 @@
 <template>
+<div class="login_wrap">
   <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="80px" class="ruleForm">
     <el-row>
       <el-col :span="24"><div class="grid-content bg-purple-dark">商品管理系统</div></el-col>
@@ -14,6 +15,7 @@
       <el-button @click="resetFn">重置</el-button>
     </el-form-item>
     </el-form>
+  </div>
   </template>
 <script>
 import axios from 'axios'
@@ -47,6 +49,8 @@ export default {
             console.log(res)
             if (res.data.meta.status === 200) {
               this.$message.success('恭喜你登陆成功')
+              localStorage.setItem('token', res.data.data.token)
+              localStorage.setItem('username', res.data.data.username)
               this.$router.push('home')
             } else {
               this.$message.error('用户名或者密码错误')
@@ -65,6 +69,12 @@ export default {
 }
 </script>
 <style lang="less">
+  .login_wrap{
+    width: 100%;
+    height:100%;
+    background:#0882B4;
+    overflow: hidden;
+  }
   .el-form{
     margin:200px auto;
     background:#fff;

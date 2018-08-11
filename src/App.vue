@@ -24,7 +24,6 @@ body,html{
 #app {
  width: 100%;
  height:100%;
- background:#0882B4;
   overflow: hidden;
 }
 </style>
