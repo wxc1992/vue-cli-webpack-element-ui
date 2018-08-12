@@ -18,7 +18,6 @@
   </div>
   </template>
 <script>
-import axios from 'axios'
 export default {
   data () {
     return {
@@ -40,12 +39,7 @@ export default {
       this.$refs['ruleForm'].validate((valid) => {
         if (valid) {
           console.log(this.ruleForm)
-          axios({
-            method: 'post',
-            baseURL: 'http://localhost:8888/api/private/v1/',
-            url: 'login',
-            data: this.ruleForm
-          }).then(res => {
+          this.axios.post('login', this.ruleForm).then(res => {
             console.log(res)
             if (res.data.meta.status === 200) {
               this.$message.success('恭喜你登陆成功')

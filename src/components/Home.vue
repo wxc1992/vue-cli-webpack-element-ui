@@ -45,7 +45,9 @@
     </el-aside>
     <el-container>
       <el-main>
-        <router-view></router-view>
+        <transition name="slide">
+          <router-view></router-view>
+        </transition>
       </el-main>
     </el-container>
   </el-container>
