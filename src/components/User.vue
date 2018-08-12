@@ -13,7 +13,11 @@
     </div>
       <!-- 增加用户 -->
     <el-dialog :visible.sync="showAdd">
-      <el-form :model="AddruleForm" :rules="Addrules"  label-width="70px" class="demo-ruleForm">
+      <el-form
+        :model="AddruleForm"
+        :rules="Addrules"
+        label-width="70px"
+        ref="AddruleForm">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="AddruleForm.username"></el-input>
         </el-form-item>
@@ -187,7 +191,24 @@ export default {
       this.showAdd = true
     },
     addUser () {
-
+      this.$refs.AddruleForm.validate(valid => {
+        if (valid) {
+          this.axios.post('users', this.AddruleForm)
+            .then(res => {
+              const {meta: {status}} = res.data
+              if (status === 201) {
+                this.showAdd = false
+                this.total++
+                this.pagenum = Math.ceil(this.total / this.pagesize)
+                this.getList()
+              } else {
+                this.$message.success(res.data.meta.msg)
+              }
+            })
+        } else {
+          return
+        }
+      })
     }
   },
   created () {
