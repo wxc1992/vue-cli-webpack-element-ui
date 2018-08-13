@@ -32,8 +32,30 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="showAdd = false">取 消</el-button>
+        <el-button @click="cancelAdd">取 消</el-button>
         <el-button type="primary" @click="addUser">确 定</el-button>
+      </div>
+    </el-dialog>
+      <!-- 编辑用户 -->
+    <el-dialog :visible.sync="showedit">
+      <el-form
+        :model="editoruleForm"
+        :rules="Addrules"
+        label-width="70px"
+        ref="editoruleForm">
+        <el-form-item label="用户名">
+          <el-tag type="info">{{editoruleForm.username}}</el-tag>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editoruleForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="editoruleForm.mobile"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="canceledit">取 消</el-button>
+        <el-button type="primary" @click="editUser">确 定</el-button>
       </div>
     </el-dialog>
     <el-table
@@ -70,7 +92,7 @@
     <el-table-column
       label="状态">
       <template slot-scope="scope">
-        <el-button size="small" plain type="primary" icon="el-icon-edit"></el-button>
+        <el-button size="small" plain type="primary" icon="el-icon-edit" @click="editForm(scope.row)"></el-button>
         <el-button size="small" plain type="danger" icon="el-icon-delete" @click="deluser(scope.row.id)"></el-button>
         <el-button size="small" plain type="success" icon="el-icon-check">角色分配</el-button>
       </template>
@@ -98,9 +120,16 @@ export default {
       userList: [],
       total: 10,
       showAdd: false,
+      showedit: false,
       AddruleForm: {
         username: '',
         password: '',
+        email: '',
+        mobile: ''
+      },
+      editoruleForm: {
+        id: '',
+        username: '',
         email: '',
         mobile: ''
       },
@@ -116,7 +145,7 @@ export default {
           { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
         ],
         mobile: [
-          { pattern: /^[1][3,4,5,7,8][0-9]{9}$/, message: '请输入正确的邮箱格式', trigger: 'blur' }
+          { pattern: /^[1][3,4,5,7,8][0-9]{9}$/, message: '请输入正确的手机格式', trigger: 'blur' }
         ]
       }
     }
@@ -190,6 +219,10 @@ export default {
     showAddFrom () {
       this.showAdd = true
     },
+    cancelAdd () {
+      this.showAdd = false
+      this.$refs['AddruleForm'].resetFields()
+    },
     addUser () {
       this.$refs.AddruleForm.validate(valid => {
         if (valid) {
@@ -206,9 +239,43 @@ export default {
               }
             })
         } else {
-          return
+          this.$message({
+            type: 'info',
+            message: '验证无效'
+          })
+          return false
         }
       })
+    },
+    editForm (scope) {
+      console.log(scope.mobile)
+      this.showedit = true
+      this.editoruleForm.username = scope.username
+      this.editoruleForm.email = scope.email
+      this.editoruleForm.mobile = scope.mobile
+      this.editoruleForm.id = scope.id
+    },
+    editUser () {
+      const {id, email, mobile} = this.editoruleForm
+      this.axios.put(`/users/${id}`, {
+        email,
+        mobile
+      }).then(res => {
+        console.log(res)
+        const {meta: {status}} = res.data
+        if (status === 200) {
+          this.showedit = false
+          this.getList()
+          this.$message.success('修改成功')
+          this.$refs.editoruleForm.resetFields()
+        } else {
+          this.$message.error(res.data.meta.msg)
+        }
+      })
+    },
+    canceledit () {
+      this.showedit = false
+      this.$refs.editoruleForm.resetFields()
     }
   },
   created () {

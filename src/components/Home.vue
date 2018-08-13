@@ -21,7 +21,7 @@
         unique-opened
         text-color="#fff"
         active-text-color="#ffd04b">
-        <el-submenu index="user">
+        <el-submenu index="1">
           <template slot="title">
             <i class="el-icon-location"></i>
             <span>用户管理</span>
@@ -34,11 +34,15 @@
         <el-submenu index="2">
           <template slot="title">
             <i class="el-icon-location"></i>
-            <span>用户权限</span>
+            <span>权限管理</span>
           </template>
-          <el-menu-item index="2">
+          <el-menu-item index="role">
             <i class="el-icon-menu"></i>
-            <span>用户权限</span>
+            <span>角色列表</span>
+          </el-menu-item>
+          <el-menu-item index="Authorization">
+            <i class="el-icon-menu"></i>
+            <span>权限列表</span>
           </el-menu-item>
         </el-submenu>
       </el-menu>
