@@ -58,6 +58,23 @@
         <el-button type="primary" @click="editUser">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 角色分配 -->
+    <el-dialog title="角色分配" :visible.sync="showrole">
+      <el-form :model="roleForm">
+        <el-form-item label="用户名">
+          <el-tag type="info">{{roleForm.username}}</el-tag>
+        </el-form-item>
+        <el-form-item label="角色列表" label-width="70px">
+          <el-select v-model="roleForm.roleId" placeholder="请选择角色列表">
+            <el-option v-for="item in rolesList" :label="item.roleName" :value="item.id" :key="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showrole = false">取 消</el-button>
+        <el-button type="primary" @click="asignRole">确 定</el-button>
+      </div>
+    </el-dialog>
     <el-table
     :data="userList"
     stripe
@@ -94,7 +111,7 @@
       <template slot-scope="scope">
         <el-button size="small" plain type="primary" icon="el-icon-edit" @click="editForm(scope.row)"></el-button>
         <el-button size="small" plain type="danger" icon="el-icon-delete" @click="deluser(scope.row.id)"></el-button>
-        <el-button size="small" plain type="success" icon="el-icon-check">角色分配</el-button>
+        <el-button size="small" plain type="success" icon="el-icon-check" @click="rightsFn(scope.row)">角色分配</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -121,6 +138,7 @@ export default {
       total: 10,
       showAdd: false,
       showedit: false,
+      showrole: false,
       AddruleForm: {
         username: '',
         password: '',
@@ -133,6 +151,12 @@ export default {
         email: '',
         mobile: ''
       },
+      roleForm: {
+        roleId: -1,
+        username: '',
+        userId: -1
+      },
+      rolesList: [],
       Addrules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -224,20 +248,18 @@ export default {
       this.$refs['AddruleForm'].resetFields()
     },
     addUser () {
-      this.$refs.AddruleForm.validate(valid => {
+      this.$refs.AddruleForm.validate(async valid => {
         if (valid) {
-          this.axios.post('users', this.AddruleForm)
-            .then(res => {
-              const {meta: {status}} = res.data
-              if (status === 201) {
-                this.showAdd = false
-                this.total++
-                this.pagenum = Math.ceil(this.total / this.pagesize)
-                this.getList()
-              } else {
-                this.$message.success(res.data.meta.msg)
-              }
-            })
+          const res = await this.axios.post('users', this.AddruleForm)
+          const {meta: {status}} = res.data
+          if (status === 201) {
+            this.showAdd = false
+            this.total++
+            this.pagenum = Math.ceil(this.total / this.pagesize)
+            this.getList()
+          } else {
+            this.$message.success(res.data.meta.msg)
+          }
         } else {
           this.$message({
             type: 'info',
@@ -255,27 +277,62 @@ export default {
       this.editoruleForm.mobile = scope.mobile
       this.editoruleForm.id = scope.id
     },
-    editUser () {
+    async editUser () {
       const {id, email, mobile} = this.editoruleForm
-      this.axios.put(`/users/${id}`, {
+      const res = await this.axios.put(`/users/${id}`, {
         email,
         mobile
-      }).then(res => {
-        console.log(res)
-        const {meta: {status}} = res.data
-        if (status === 200) {
-          this.showedit = false
-          this.getList()
-          this.$message.success('修改成功')
-          this.$refs.editoruleForm.resetFields()
-        } else {
-          this.$message.error(res.data.meta.msg)
-        }
       })
+      console.log(res)
+      const {meta: {status}} = res.data
+      if (status === 200) {
+        this.showedit = false
+        this.getList()
+        this.$message.success('修改成功')
+        this.$refs.editoruleForm.resetFields()
+      } else {
+        this.$message.error(res.data.meta.msg)
+      }
     },
     canceledit () {
       this.showedit = false
       this.$refs.editoruleForm.resetFields()
+    },
+    async getrole () { // 获取所有的角色列表
+      const res = await this.axios.get('roles')
+      console.log(res)
+      const {meta, data} = res.data
+      if (meta.status === 200) {
+        this.rolesList = data
+      }
+    },
+    async rightsFn (scope) { // 弹窗出现 根据用户的id获得用户对应的角色roleId
+      console.log(scope)
+      this.getrole() // 获取所有的角色列表
+      this.showrole = true
+      this.roleForm.username = scope.username
+      this.roleForm.userId = scope.id
+      const res = await this.axios.get(`users/${this.roleForm.userId}`)
+      const {meta, data} = res.data
+      if (meta.status === 200) {
+        if (data.rid === -1) {
+          this.roleForm.roleId = ''
+        } else {
+          this.roleForm.roleId = data.rid
+        }
+      }
+    },
+    async asignRole () {
+      if (this.roleForm.roleId === '') {
+        return
+      }
+      const res = await this.axios.put(`users/${this.roleForm.userId}/role`, {rid: this.roleForm.roleId})
+      const {meta} = res.data
+      if (meta.status === 200) {
+        this.$message.success(meta.msg)
+        this.showrole = false
+        this.getList()
+      }
     }
   },
   created () {

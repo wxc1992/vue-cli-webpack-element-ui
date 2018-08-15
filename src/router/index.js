@@ -2,16 +2,17 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from '@/components/Login'
 import Home from '@/components/Home'
-import User from '@/components/User'
-import Role from '@/components/Role'
-import Authorization from '@/components/Authorization'
+import User from '@/components/user/Users'
+import Role from '@/components/rights/Role'
+import Authorization from '@/components/rights/Authorization'
+import categories from '@/components/categories/categories'
 Vue.use(Router)
 
 const router = new Router({
   routes: [
     {
       path: '/',
-      component: Login
+      redirect: '/home'
     },
     {
       path: '/login',
@@ -24,19 +25,24 @@ const router = new Router({
       component: Home,
       children: [
         {
-          path: '/user',
-          name: 'user',
+          path: '/users',
+          name: 'users',
           component: User
         },
         {
-          path: '/role',
-          name: 'role',
+          path: '/roles',
+          name: 'roles',
           component: Role
         },
         {
-          path: '/Authorization',
-          name: 'Authorization',
+          path: '/rights',
+          name: 'rights',
           component: Authorization
+        },
+        {
+          path: '/categories',
+          name: 'categories',
+          component: categories
         }
       ]
     }

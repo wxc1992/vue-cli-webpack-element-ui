@@ -12,7 +12,7 @@
   <el-container>
     <el-aside width="200px">
       <el-menu
-        default-active="user"
+        :default-active="$route.path.slice(1)"
         router
         class="el-menu-vertical-demo"
         @open="handleOpen"
@@ -21,28 +21,14 @@
         unique-opened
         text-color="#fff"
         active-text-color="#ffd04b">
-        <el-submenu index="1">
+        <el-submenu :index="l1.path" v-for="l1 in menuList" :key="l1.id">
           <template slot="title">
             <i class="el-icon-location"></i>
-            <span>用户管理</span>
+            <span>{{l1.authName}}</span>
           </template>
-          <el-menu-item index="user">
+          <el-menu-item :index="l2.path" v-for="l2 in l1.children" :key="l2.id">
             <i class="el-icon-menu"></i>
-            <span>用户列表</span>
-          </el-menu-item>
-        </el-submenu>
-        <el-submenu index="2">
-          <template slot="title">
-            <i class="el-icon-location"></i>
-            <span>权限管理</span>
-          </template>
-          <el-menu-item index="role">
-            <i class="el-icon-menu"></i>
-            <span>角色列表</span>
-          </el-menu-item>
-          <el-menu-item index="Authorization">
-            <i class="el-icon-menu"></i>
-            <span>权限列表</span>
+            <span>{{l2.authName}}</span>
           </el-menu-item>
         </el-submenu>
       </el-menu>
@@ -62,7 +48,8 @@
 export default {
   data () {
     return {
-      username: localStorage.getItem('username')
+      username: localStorage.getItem('username'),
+      menuList: []
     }
   },
   methods: {
@@ -93,7 +80,18 @@ export default {
           duration: 1000
         })
       })
+    },
+    async getMenu () {
+      const res = await this.axios.get('menus')
+      // console.log(res)
+      const {meta, data} = res.data
+      if (meta.status === 200) {
+        this.menuList = data
+      }
     }
+  },
+  created () {
+    this.getMenu()
   }
 }
 </script>
